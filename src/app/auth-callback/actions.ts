@@ -1,6 +1,6 @@
 "use server"
 
-// import { db } from "@/db"
+import { db } from "@/db"
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server"
 
 export const getAuthStatus = async () => {
@@ -11,19 +11,19 @@ export const getAuthStatus = async () => {
     throw new Error("User not found")
   }
 
-  // const existingUser = await db.user.findFirst({
-  //   where: { id: user.id },
-  // })
+  const existingUser = await db.user.findFirst({
+    where: { id: user.id },
+  })
 
-  // if (!existingUser) {
-  //   await db.user.create({
-  //     data: {
-  //       id: user.id,
-  //       email: user.email,
-  //       name: user.given_name,
-  //     },
-  //   })
-  // }
+  if (!existingUser) {
+    await db.user.create({
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.given_name,
+      },
+    })
+  }
 
   return { success: true }
 }

@@ -24,6 +24,7 @@ export default function RootLayout({
     <html lang='en' className={`${onest.variable}`}>
       <body className='font-onest grainy-light'>
         <Navbar />
+        <div className='h-[10vh]' />
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

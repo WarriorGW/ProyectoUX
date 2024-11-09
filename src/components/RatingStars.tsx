@@ -2,7 +2,7 @@ import React from "react"
 import { Star, StarHalf } from "lucide-react"
 
 const RatingStars = ({
-  rating,
+  rating = 0,
   noNumber,
 }: {
   rating: number

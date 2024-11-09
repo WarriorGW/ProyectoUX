@@ -5,19 +5,18 @@ import { Button, buttonVariants } from "./ui/button"
 import Link from "next/link"
 import { Input } from "./ui/input"
 import {
-  ChevronRight,
+  // ChevronRight,
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
   Search,
   ShoppingCart,
-  Truck,
   User,
 } from "lucide-react"
 import {
   LoginLink,
   LogoutLink,
-  RegisterLink,
+  // RegisterLink,
 } from "@kinde-oss/kinde-auth-nextjs/components"
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
 import {
@@ -35,7 +34,7 @@ function UserOptions() {
       {isLoading ? (
         <Button variant='ghost'>Cargando...</Button>
       ) : user ? (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
               variant='ghost'
@@ -54,25 +53,13 @@ function UserOptions() {
                 Carrito
               </Link>
             </DropdownMenuItem>
-
-            <DropdownMenuItem>
-              {user.id && (
-                <Link
-                  href={`/orders?userId=${user.id}`}
-                  className='flex gap-x-3 justify-center items-center'
-                >
-                  <Truck className='size-4' />
-                  Check Status
-                </Link>
-              )}
-            </DropdownMenuItem>
             {permissions.permissions.includes("manage-inventory") ? (
               <DropdownMenuItem>
                 <Link
-                  href='/dashboard'
+                  href='/dashboard/inventario'
                   className='flex gap-x-3 justify-center items-center'
                 >
-                  <LayoutDashboard className='size-4' /> Dashboard
+                  <LayoutDashboard className='size-4' /> Administrar
                 </Link>
               </DropdownMenuItem>
             ) : (
@@ -98,7 +85,7 @@ function UserOptions() {
           >
             <User className='size-5' /> Iniciar sesión
           </LoginLink>
-          <RegisterLink
+          {/* <RegisterLink
             postLoginRedirectURL='/auth-callback'
             className={buttonVariants({
               variant: "secondary",
@@ -106,7 +93,7 @@ function UserOptions() {
             })}
           >
             Registrarse <ChevronRight className='size-5 ml-1' />
-          </RegisterLink>
+          </RegisterLink> */}
         </div>
       )}
     </>
@@ -115,7 +102,7 @@ function UserOptions() {
 
 function Navbar() {
   return (
-    <nav className='bg-blue-500 py-3 px-3 md:px-10 justify-between flex items-center'>
+    <nav className='fixed w-full z-50 top-0 bg-blue-500 py-3 px-3 md:px-10 justify-between flex items-center'>
       <div className='flex-1'>
         <Link
           href='/'
