@@ -17,7 +17,7 @@ function Card({ product }: { product: ProductCardProps }) {
       ? product.image[0]
       : "https://placehold.co/600?font=roboto&text=No+Image"
   return (
-    <div className='p-5 rounded-xl w-[300px] md:w-[250px] flex flex-col justify-center items-center shadow-sm gap-y-3 bg-white relative'>
+    <div className='p-4 rounded-xl w-[300px] md:w-[250px] h-[350px] md:h-[330px] flex flex-col justify-center items-center shadow-sm gap-y-3 bg-white relative'>
       <div className='bg-gray-100 aspect-square w-full rounded-md p-0 overflow-hidden'>
         <img
           src={imageUrl}
@@ -32,7 +32,7 @@ function Card({ product }: { product: ProductCardProps }) {
         </div>
         <Link
           href={`/product/${formatToURL(product.name)}`}
-          className='text-pretty text-lg w-full poly-component hover:text-sky-600 line-clamp-2 text-ellipsis'
+          className='text-pretty text-base w-full poly-component hover:text-sky-600 line-clamp-1 text-ellipsis'
         >
           {product.name}
         </Link>
