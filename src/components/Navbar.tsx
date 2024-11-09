@@ -10,7 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Search,
-  ShoppingCart,
+  // ShoppingCart,
   User,
 } from "lucide-react"
 import {
@@ -44,7 +44,7 @@ function UserOptions() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem>
+            {/* <DropdownMenuItem>
               <Link
                 href={`/carrito?userId=${user.id}`}
                 className='flex gap-x-3 justify-center items-center'
@@ -52,7 +52,7 @@ function UserOptions() {
                 <ShoppingCart className='size-4' />
                 Carrito
               </Link>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             {permissions.permissions.includes("manage-inventory") ? (
               <DropdownMenuItem>
                 <Link

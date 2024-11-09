@@ -55,8 +55,8 @@ export default function Home() {
       <LoginModal isOpen={isOpen} setIsOpen={setIsOpen} />
       <div className='flex flex-wrap items-center justify-center gap-5'>
         {products.isLoading ? (
-          <div className='flex flex-col justify-center items-center'>
-            <img src='loading-logo.png' alt='' />
+          <div className='flex flex-col gap-y-5 justify-center items-center'>
+            <img src='logo.png' alt='' className='size-48' />
             <p>Cargando...</p>
           </div>
         ) : products.data ? (
