@@ -5,27 +5,24 @@ import { Button, buttonVariants } from "./ui/button"
 import Link from "next/link"
 import { Input } from "./ui/input"
 import {
-  // ChevronRight,
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
   Search,
-  // ShoppingCart,
+  ShoppingCart,
   User,
 } from "lucide-react"
-import {
-  LoginLink,
-  LogoutLink,
-  // RegisterLink,
-} from "@kinde-oss/kinde-auth-nextjs/components"
+import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "./ui/dropdown-menu"
-import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu"
+import { Separator } from "./ui/separator"
+import { useEffect, useState } from "react"
 
 function UserOptions() {
   const { user, isLoading, permissions } = useKindeBrowserClient()
@@ -44,15 +41,15 @@ function UserOptions() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            {/* <DropdownMenuItem>
+            <DropdownMenuItem>
               <Link
-                href={`/carrito?userId=${user.id}`}
+                href={`/cart?userId=${user.id}`}
                 className='flex gap-x-3 justify-center items-center'
               >
                 <ShoppingCart className='size-4' />
                 Carrito
               </Link>
-            </DropdownMenuItem> */}
+            </DropdownMenuItem>
             {permissions.permissions.includes("manage-inventory") ? (
               <DropdownMenuItem>
                 <Link
@@ -65,7 +62,7 @@ function UserOptions() {
             ) : (
               <></>
             )}
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className='bg-blue-100' />
             <DropdownMenuItem>
               <LogoutLink className='flex gap-x-3 justify-center items-center'>
                 <LogOut className='size-4' />
@@ -85,45 +82,83 @@ function UserOptions() {
           >
             <User className='size-5' /> Iniciar sesión
           </LoginLink>
-          {/* <RegisterLink
-            postLoginRedirectURL='/auth-callback'
-            className={buttonVariants({
-              variant: "secondary",
-              className: "font-semibold text-foreground text-xs sm:text-base",
-            })}
-          >
-            Registrarse <ChevronRight className='size-5 ml-1' />
-          </RegisterLink> */}
         </div>
       )}
     </>
   )
 }
 
-function Navbar() {
+function UnderBar({ hidden }: { hidden: boolean }) {
   return (
-    <nav className='fixed w-full z-50 top-0 bg-blue-500 py-3 px-3 md:px-10 justify-between flex items-center'>
-      <div className='flex-1'>
-        <Link
-          href='/'
-          className={cn(
-            buttonVariants({ variant: "semighost" }),
-            "flex items-center gap-x-2 w-fit px-1"
-          )}
-        >
-          <img src='/logo.png' alt='logo' className='size-8' />
-          <p className='font-bold text-xl text-gray-800'>Diseño UX</p>
-        </Link>
+    <div
+      className={cn(
+        "w-full bg-white h-10 rounded-b-3xl flex flex-row justify-center items-center py-2 transition-transform -z-50 fixed duration-200",
+        { "-translate-y-full": hidden, "translate-y-0": !hidden }
+      )}
+    >
+      <Link
+        href={"/servicios"}
+        className={buttonVariants({ variant: "ghost" })}
+      >
+        Servicios
+      </Link>
+      <Separator orientation='vertical' className='bg-blue-400' />
+      <Link href={"/acercade"} className={buttonVariants({ variant: "ghost" })}>
+        Sobre nosotros
+      </Link>
+      <Separator orientation='vertical' className='bg-blue-400' />
+      <Link
+        href={"/contactanos"}
+        className={buttonVariants({ variant: "ghost" })}
+      >
+        Contáctanos
+      </Link>
+    </div>
+  )
+}
+
+function Navbar() {
+  const [hideUnderBar, setHideUnderBar] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY
+      setHideUnderBar(scrollY > 30)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
+
+  return (
+    <nav className='fixed w-full z-50 top-0'>
+      <div className='bg-blue-500 py-3 px-3 md:px-10 justify-between flex items-center'>
+        <div className='flex-1'>
+          <Link
+            href='/'
+            className={cn(
+              buttonVariants({ variant: "semighost" }),
+              "flex items-center gap-x-2 w-fit px-1"
+            )}
+          >
+            <img src='/logo.png' alt='logo' className='size-8' />
+            <p className='font-bold text-xl text-gray-800'>Diseño UX</p>
+          </Link>
+        </div>
+        <div className='flex-1 md:flex hidden'>
+          <Input className='rounded-r-none bg-white' placeholder='Buscar...' />
+          <Button variant='outline' className='rounded-l-none'>
+            <Search className='size-4' />
+          </Button>
+        </div>
+        <div className='flex-1 flex justify-end'>
+          <UserOptions />
+        </div>
       </div>
-      <div className='flex-1 md:flex hidden'>
-        <Input className='rounded-r-none bg-white' placeholder='Buscar...' />
-        <Button variant='outline' className='rounded-l-none'>
-          <Search className='size-4' />
-        </Button>
-      </div>
-      <div className='flex-1 flex justify-end'>
-        <UserOptions />
-      </div>
+      <UnderBar hidden={hideUnderBar} />
     </nav>
   )
 }

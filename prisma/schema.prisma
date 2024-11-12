@@ -110,10 +110,10 @@ model CartProduct {
 model ShippingAddress {
   id          String  @id @default(cuid())
   name        String
-  street      String
-  city        String
-  postaleCode String
-  country     String
+  street      String?
+  city        String?
+  postaleCode String?
+  country     String?
   state       String?
   phoneNumber String?
   orders      Order[]
@@ -122,10 +122,10 @@ model ShippingAddress {
 model BillingAddress {
   id          String  @id @default(cuid())
   name        String
-  street      String
-  city        String
-  postaleCode String
-  country     String
+  street      String?
+  city        String?
+  postaleCode String?
+  country     String?
   state       String?
   phoneNumber String?
   orders      Order[]

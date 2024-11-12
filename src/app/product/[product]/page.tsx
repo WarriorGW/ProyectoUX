@@ -20,8 +20,6 @@ function ViewProduct({ params }: { params: { [key: string]: string } }) {
     gcTime: 0,
   })
 
-  console.log(revertURL(params.product))
-
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
@@ -80,8 +78,8 @@ function ViewProduct({ params }: { params: { [key: string]: string } }) {
 
           <div className='flex flex-row justify-between mt-0 items-center ml-0 md:ml-3 gap-x-1 mr-10 pr-12'>
             <div></div>
-            <Button size='sm' variant='yellow' className='gap-x-2'>
-              <ShoppingCart size={16} /> Agregar al carrito
+            <Button size='default' variant='yellow' className='gap-x-2'>
+              <ShoppingCart size={16} /> Comprar ahora
             </Button>
           </div>
         </div>
