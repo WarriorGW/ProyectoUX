@@ -1,10 +1,18 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "./ui/button"
-import Link from "next/link"
-import { Input } from "./ui/input"
 import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+} from "@/components/ui/navigation-menu"
+import { cn } from "@/lib/utils"
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
+import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
+import {
+  ChevronRight,
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
@@ -12,17 +20,18 @@ import {
   ShoppingCart,
   User,
 } from "lucide-react"
-import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { Button, buttonVariants } from "./ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
+import { Input } from "./ui/input"
 import { Separator } from "./ui/separator"
-import { useEffect, useState } from "react"
 
 function UserOptions() {
   const { user, isLoading, permissions } = useKindeBrowserClient()
@@ -96,12 +105,45 @@ function UnderBar({ hidden }: { hidden: boolean }) {
         { "-translate-y-full": hidden, "translate-y-0": !hidden }
       )}
     >
-      <Link
-        href={"/servicios"}
-        className={buttonVariants({ variant: "ghost" })}
-      >
-        Servicios
-      </Link>
+      <NavigationMenu>
+        <NavigationMenuList>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>Categorías</NavigationMenuTrigger>
+            <NavigationMenuContent className='p-2'>
+              <Link
+                href={"/servicios"}
+                className={buttonVariants({
+                  variant: "ghost",
+                  className: "gap-x-2",
+                })}
+              >
+                Categoría 1 <ChevronRight className='size-4' />
+              </Link>
+              <Link
+                href={"/servicios"}
+                className={buttonVariants({
+                  variant: "ghost",
+                  className: "gap-x-2",
+                })}
+              >
+                Categoría 2<ChevronRight className='size-4' />
+              </Link>
+              <Link
+                href={"/servicios"}
+                className={buttonVariants({
+                  variant: "ghost",
+                  className: "gap-x-2",
+                })}
+              >
+                Categoría 3<ChevronRight className='size-4' />
+              </Link>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+        <NavigationMenuViewport>
+          <p>wenas</p>
+        </NavigationMenuViewport>
+      </NavigationMenu>
       <Separator orientation='vertical' className='bg-blue-400' />
       <Link href={"/acercade"} className={buttonVariants({ variant: "ghost" })}>
         Sobre nosotros
