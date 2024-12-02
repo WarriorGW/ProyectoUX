@@ -6,7 +6,6 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
-  NavigationMenuViewport,
 } from "@/components/ui/navigation-menu"
 import { cn } from "@/lib/utils"
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
@@ -126,7 +125,7 @@ function UnderBar({ hidden }: { hidden: boolean }) {
                   className: "gap-x-2",
                 })}
               >
-                Categoría 2<ChevronRight className='size-4' />
+                Categoría 2 <ChevronRight className='size-4' />
               </Link>
               <Link
                 href={"/servicios"}
@@ -135,26 +134,23 @@ function UnderBar({ hidden }: { hidden: boolean }) {
                   className: "gap-x-2",
                 })}
               >
-                Categoría 3<ChevronRight className='size-4' />
+                Categoría 3 <ChevronRight className='size-4' />
               </Link>
             </NavigationMenuContent>
           </NavigationMenuItem>
         </NavigationMenuList>
-        <NavigationMenuViewport>
-          <p>wenas</p>
-        </NavigationMenuViewport>
       </NavigationMenu>
       <Separator orientation='vertical' className='bg-blue-400' />
       <Link href={"/acercade"} className={buttonVariants({ variant: "ghost" })}>
         Sobre nosotros
       </Link>
-      <Separator orientation='vertical' className='bg-blue-400' />
+      {/* <Separator orientation='vertical' className='bg-blue-400' />
       <Link
         href={"/contactanos"}
         className={buttonVariants({ variant: "ghost" })}
       >
         Contáctanos
-      </Link>
+      </Link> */}
     </div>
   )
 }
