@@ -1,7 +1,7 @@
 "use server"
 
-import { Inventory } from "@/types/Inventory"
 import { db } from "@/db"
+import { Inventory } from "@/types/Inventory"
 import cloudinary from "@/util/Cloudinary"
 
 async function getProducts(): Promise<Inventory[]> {
@@ -15,6 +15,17 @@ async function getProducts(): Promise<Inventory[]> {
   })
 
   return inventory
+}
+
+async function getCategories() {
+  const categories = await db.category.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+  })
+
+  return categories
 }
 
 async function getOneProduct(id: string) {
@@ -132,4 +143,11 @@ async function addProduct(formData: globalThis.FormData) {
   return product
 }
 
-export { getProducts, addProduct, getOneProduct, updateProduct, deleteProduct }
+export {
+  addProduct,
+  deleteProduct,
+  getCategories,
+  getOneProduct,
+  getProducts,
+  updateProduct,
+}

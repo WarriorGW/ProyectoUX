@@ -17,17 +17,19 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import Dropzone, { FileRejection } from "react-dropzone"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { addProduct, getOneProduct, updateProduct } from "./actions"
-import { Textarea } from "@/components/ui/textarea"
+import {
+  addProduct,
+  getCategories,
+  getOneProduct,
+  updateProduct,
+} from "./actions"
 
 type FormData = {
   imagenes: File[]
   nombre: string
-  descripcion: string
   cantidad: number
   precio_base: number
-  categoria?: string
-  nueva_categoria?: string
+  categoria: string
 }
 
 function ProductsForm({
@@ -38,33 +40,11 @@ function ProductsForm({
   setIsOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const formSchema = z.object({
-    imagen: editID
-      ? z
-          .union([
-            z.instanceof(File).refine((file) => file.size <= 5000000, {
-              message: "La imagen editada no puede pesar más de 5MB",
-            }),
-            z.literal(null),
-          ])
-          .optional()
-      : z
-          .instanceof(File)
-          .refine((file) => file instanceof File, {
-            message: "Debe subir una imagen",
-          })
-          .refine((file) => file instanceof File && file.size <= 5000000, {
-            message: "La imagen creada no puede pesar más de 5MB",
-          }),
+    imagenes: z.array(z.instanceof(File)).nonempty({
+      message: "Debe subir al menos una imagen",
+    }),
     nombre: z
       .string({ required_error: "El nombre del producto es requerido" })
-      .min(10, {
-        message: "Debe tener al menos 10 caracteres",
-      })
-      .max(200, {
-        message: "No puede tener más de 200 caracteres",
-      }),
-    descripcion: z
-      .string()
       .min(10, {
         message: "Debe tener al menos 10 caracteres",
       })
@@ -78,9 +58,9 @@ function ProductsForm({
           invalid_type_error: "Ingrese un valor",
           required_error: "Ingrese un valor",
         })
-        .min(1, { message: "Debe de tener minimo un articulo en inventario" })
+        .min(1, { message: "Debe de tener mínimo un artículo en inventario" })
         .max(100000, {
-          message: "No puedes tener más de 100,000 articulos en inventario",
+          message: "No puedes tener más de 100,000 artículos en inventario",
         })
     ),
     precio_base: z.preprocess(
@@ -89,9 +69,19 @@ function ProductsForm({
         .number({ invalid_type_error: "Ingrese un valor" })
         .min(5, { message: "El precio base debe ser mayor a $5" })
     ),
+    categoria: z.string().optional(), // Campo opcional para la categoría
+    nueva_categoria: z
+      .string()
+      .min(1, {
+        message: "El nombre de la nueva categoría es requerido",
+      })
+      .optional(), // Campo opcional para la nueva categoría
   })
 
-  const { data } = useQuery({
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+
+  const { data: product } = useQuery({
     queryKey: ["product"],
     queryFn: async () => {
       return await getOneProduct(editID as string)
@@ -106,21 +96,31 @@ function ProductsForm({
     },
   })
 
-  const add = useMutation({
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await getCategories()
+      return response
+    },
+  })
+
+  const {
+    isPending,
+    mutate: mutateProduct,
+    isSuccess,
+    isError,
+    error,
+  } = useMutation({
     mutationFn: async (data: globalThis.FormData) => {
       await addProduct(data)
     },
   })
-
-  const [isDragOver, setIsDragOver] = useState(false)
-  const [imageUrls, setImageUrls] = useState<string[]>([])
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       imagenes: [],
       nombre: "",
-      descripcion: "",
       cantidad: 0,
       precio_base: 0,
     },
@@ -129,32 +129,27 @@ function ProductsForm({
   const { setValue } = form
 
   useEffect(() => {
-    if (data) {
-      setImageUrls(data.image)
-      setValue("nombre", data.name)
-      setValue("descripcion", data.description ?? "")
-      setValue("cantidad", data.quantity)
-      setValue("precio_base", data.price)
+    if (product) {
+      setImageUrls(product.image)
+      setValue("nombre", product.name)
+      setValue("cantidad", product.quantity)
+      setValue("precio_base", product.price)
     }
-  }, [data, setValue])
+  }, [product, setValue])
 
-  async function onSubmit(values: FormData) {
-    console.log("enviando")
-    console.log(values)
-
+  const onSubmit = async (values: FormData) => {
     const formData = new FormData()
     values.imagenes.forEach((file) => {
       formData.append("imagenes", file)
     })
     formData.append("nombre", values.nombre)
-    formData.append("descripcion", values.descripcion)
     formData.append("cantidad", values.cantidad.toString())
     formData.append("precio_base", values.precio_base.toString())
-
+    formData.append("categoria", values.categoria)
     if (editID) {
       update.mutate(formData)
     } else {
-      add.mutate(formData)
+      mutateProduct(formData)
     }
     try {
       setIsOpen(false)
@@ -162,6 +157,25 @@ function ProductsForm({
       console.log(error)
     }
   }
+
+  useEffect(() => {
+    if (isPending) {
+      console.log("Cargando...")
+    } else if (isSuccess) {
+      form.reset()
+      setImageUrls([])
+      console.log("Producto creado")
+    } else if (isError) {
+      console.error(error)
+    }
+  }, [isPending, isSuccess, isError, error, form])
+
+  useEffect(() => {
+    return () => {
+      // Limpia las URLs cuando el componente se desmonte
+      imageUrls.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [imageUrls])
 
   const onDropAccepted = (files: File[]) => {
     setImageUrls((prevUrls) => [
@@ -179,158 +193,174 @@ function ProductsForm({
   }
 
   return (
-    <div className='flex flex-col md:flex-row gap-x-10 items-center justify-center'>
-      <div
-        className={cn(
-          "relative max-w-sm aspect-square flex-1 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:rounded-2xl flex justify-center flex-col items-center my-3 md:my-0 w-[50%] md:w-[50%]",
-          {
-            "ring-blue-900/25 bg-blue-900/10": isDragOver,
-          }
-        )}
-      >
-        <Dropzone
-          onDropAccepted={onDropAccepted}
-          onDropRejected={onDropRejected}
-          onDragEnter={() => setIsDragOver(true)}
-          onDragLeave={() => setIsDragOver(false)}
-          accept={{
-            "image/png": [".png"],
-            "image/jpg": [".jpg"],
-            "image/jpeg": [".jpeg"],
-          }}
-          multiple
+    <div className='flex flex-col md:flex-row gap-x-5 items-center justify-center'>
+      <div className='flex flex-1 flex-col w-[50%] md:w-[50%] gap-3'>
+        <div
+          className={cn(
+            "relative max-w-sm aspect-square rounded-xl bg-gray-900/5 ring-1 ring-inset ring-gray-900/10 lg:rounded-2xl flex justify-center flex-col items-center my-3 md:my-0 ",
+            {
+              "ring-blue-900/25 bg-blue-900/10": isDragOver,
+            }
+          )}
         >
-          {({ getRootProps, getInputProps }) => (
-            <div
-              className='flex-1 flex flex-col items-center justify-center cursor-pointer h-full w-full'
-              {...getRootProps()}
-            >
-              <Input {...getInputProps()} />
-              {isDragOver ? (
-                <MousePointerSquareDashed />
-              ) : add.isPending ? (
-                <Loader2 className='animate-spin size-6 mb-2' />
-              ) : imageUrls.length > 0 ? null : (
-                <ImagePlus className='size-6 mb-2' />
-              )}
-              {imageUrls.length === 0 && (
-                <div className='flex flex-col justify-center mb-2 text-sm'>
-                  {add.isPending ? (
-                    <div className='flex flex-col items-center'>
-                      <p>Redireccionando, por favor espere...</p>
-                    </div>
-                  ) : isDragOver ? (
-                    <p>
-                      <span className='font-semibold'>Suelta el archivo</span>
-                      para subirlo
-                    </p>
-                  ) : (
-                    <p className='text-center flex flex-col'>
-                      <span className='font-semibold'>
-                        Presiona para seleccionar imágenes
-                      </span>
-                      <span>-o-</span>
-                      <span>arrastra y suelta imágenes aquí</span>
-                    </p>
-                  )}
-                </div>
-              )}
+          <Dropzone
+            onDropAccepted={onDropAccepted}
+            onDropRejected={onDropRejected}
+            onDragEnter={() => setIsDragOver(true)}
+            onDragLeave={() => setIsDragOver(false)}
+            accept={{
+              "image/png": [".png"],
+              "image/jpg": [".jpg"],
+              "image/jpeg": [".jpeg"],
+            }}
+            multiple
+          >
+            {({ getRootProps, getInputProps }) => (
+              <div
+                className='size-full flex-1 flex flex-col items-center justify-center cursor-pointer'
+                {...getRootProps()}
+              >
+                <Input {...getInputProps()} />
+                {isDragOver ? (
+                  <MousePointerSquareDashed />
+                ) : isPending ? (
+                  <Loader2 className='animate-spin size-6 mb-2' />
+                ) : imageUrls.length > 0 ? null : (
+                  <ImagePlus className='size-6 mb-2' />
+                )}
+
+                {imageUrls.length === 0 && (
+                  <div className='flex flex-col justify-center mb-2 text-sm'>
+                    {isPending ? (
+                      <div className='flex flex-col items-center'>
+                        <p>Redireccionando, por favor espere...</p>
+                      </div>
+                    ) : isDragOver ? (
+                      <p>
+                        <span className='font-semibold'>Suelta el archivo</span>
+                        para subirlo
+                      </p>
+                    ) : (
+                      <p className='text-center flex flex-col'>
+                        <span className='font-semibold'>
+                          Presiona para seleccionar imágenes
+                        </span>
+                        <span>-o-</span>
+                        <span>arrastra y suelta imágenes aquí</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </Dropzone>
+          {imageUrls.length > 0 && (
+            <div className='absolute inset-0 p-4 flex flex-wrap gap-4 overflow-auto'>
+              <img
+                src={imageUrls[0]}
+                alt='Imagen de complemento'
+                className={`object-cover rounded size-full`}
+              />
             </div>
           )}
-        </Dropzone>
-        {imageUrls.length > 0 && (
-          <div className='absolute inset-0 flex items-center justify-center overflow-hidden rounded-xl'>
-            {imageUrls.map((url, index) => (
-              <img
-                key={index}
-                src={url}
-                className={`object-cover rounded ${
-                  imageUrls.length === 1 ? "h-full w-full" : "h-32 w-1/2"
-                }`}
-                alt='jiji'
-              />
+        </div>
+        <div className=' flex gap-x-2'>
+          {imageUrls.length > 0 &&
+            imageUrls.slice(1).map((image, i) => (
+              <div
+                key={i}
+                className='aspect-square w-fit rounded-xl bg-gray-900/5 p-2 overflow-hidden'
+              >
+                <img
+                  src={image}
+                  alt='Imagen de complemento'
+                  className='size-14 rounded'
+                />
+              </div>
             ))}
-          </div>
-        )}
+        </div>
       </div>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='space-y-2 md:space-y-5 lg:space-y-8'
-        >
-          <FormField
-            control={form.control}
-            name='nombre'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre del producto</FormLabel>
-                <FormControl>
-                  <Input placeholder='Tornillos de gran agarre' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='descripcion'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Descripcion</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder='Tiene una gran resistencia a la...'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='cantidad'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cantidad</FormLabel>
-                <FormControl>
-                  <Input
-                    type='number'
-                    placeholder='100'
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Cantidad de este producto en inventario
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='precio_base'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Precio base</FormLabel>
-                <FormControl>
-                  <Input
-                    type='number'
-                    placeholder='259.00'
-                    {...field}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type='submit' variant='gray' className='w-full'>
-            Crear producto
-          </Button>
-        </form>
-      </Form>
+      <div className='flex flex-col flex-1 p-2 md:p-5 space-y-5'>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3'>
+            <FormField
+              control={form.control}
+              name='nombre'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Nombre del producto' {...field} />
+                  </FormControl>
+                  <FormDescription>Nombre del producto</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='cantidad'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cantidad</FormLabel>
+                  <FormControl>
+                    <Input type='number' placeholder='Cantidad' {...field} />
+                  </FormControl>
+                  <FormDescription>Cantidad en inventario</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='precio_base'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio Base</FormLabel>
+                  <FormControl>
+                    <Input type='number' placeholder='Precio base' {...field} />
+                  </FormControl>
+                  <FormDescription>Precio base del producto</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='categoria'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoría</FormLabel>
+                  <FormControl>
+                    <select
+                      {...field}
+                      className='input'
+                      onChange={(e) => {
+                        const selectedCategory = e.target.value
+                        form.setValue("categoria", selectedCategory)
+                      }}
+                    >
+                      <option value='' disabled>
+                        Selecciona una categoría
+                      </option>
+                      {categories?.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormDescription>
+                    Selecciona una categoría para el producto
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type='submit'>Crear Producto</Button>
+          </form>
+        </Form>
+      </div>
     </div>
   )
 }
