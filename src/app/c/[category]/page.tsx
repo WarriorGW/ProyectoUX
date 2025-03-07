@@ -5,7 +5,7 @@ import LoginModal from "@/components/LoginModal"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 
-function page({ params }: { params: { category: string } }) {
+function Category({ params }: { params: { category: string } }) {
   const [isOpen, setIsOpen] = useState(false)
   const [opacity, setOpacity] = useState(1)
 
@@ -37,4 +37,4 @@ function page({ params }: { params: { category: string } }) {
   )
 }
 
-export default page
+export default Category
