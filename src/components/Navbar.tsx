@@ -10,17 +10,20 @@ import {
 import { cn } from "@/lib/utils"
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
 import { LoginLink, LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
+import { useQuery } from "@tanstack/react-query"
 import {
   ChevronRight,
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
   Search,
+  Settings,
   ShoppingCart,
   User,
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { getCategories, getUserById } from "./actions"
 import { Button, buttonVariants } from "./ui/button"
 import {
   DropdownMenu,
@@ -34,9 +37,19 @@ import { Separator } from "./ui/separator"
 
 function UserOptions() {
   const { user, isLoading, permissions } = useKindeBrowserClient()
+
+  const { data: userData, isLoading: isUserLoading } = useQuery({
+    queryKey: ["user", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null
+      return await getUserById(user.id)
+    },
+    enabled: !!user?.id, // Solo se ejecuta si hay un id
+  })
+
   return (
     <>
-      {isLoading ? (
+      {isLoading || isUserLoading ? (
         <Button variant='ghost'>Cargando...</Button>
       ) : user ? (
         <DropdownMenu modal={false}>
@@ -45,7 +58,8 @@ function UserOptions() {
               variant='ghost'
               className='bg-white/30 hover:bg-white/70 min-w-24 focus-visible:ring-offset-0 focus-visible:ring-0 gap-2'
             >
-              {user.given_name} <ChevronsUpDown className='size-4' />
+              {userData?.name || user.given_name}{" "}
+              <ChevronsUpDown className='size-4' />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -65,6 +79,18 @@ function UserOptions() {
                   className='flex gap-x-3 justify-center items-center'
                 >
                   <LayoutDashboard className='size-4' /> Administrar
+                </Link>
+              </DropdownMenuItem>
+            ) : (
+              <></>
+            )}
+            {user && !isLoading ? (
+              <DropdownMenuItem>
+                <Link
+                  href='/edituser'
+                  className='flex gap-x-3 justify-center items-center'
+                >
+                  <Settings className='size-4' /> Ajustes
                 </Link>
               </DropdownMenuItem>
             ) : (
@@ -97,6 +123,25 @@ function UserOptions() {
 }
 
 function UnderBar({ hidden }: { hidden: boolean }) {
+  const {
+    data: categories,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["navcat"],
+    queryFn: async () => {
+      const res = await getCategories()
+      return res
+    },
+  })
+
+  useEffect(() => {
+    console.log(categories)
+    if (isError) {
+      console.error(error)
+    }
+  }, [categories, isError, error])
+
   return (
     <div
       className={cn(
@@ -109,7 +154,7 @@ function UnderBar({ hidden }: { hidden: boolean }) {
           <NavigationMenuItem>
             <NavigationMenuTrigger>Categorías</NavigationMenuTrigger>
             <NavigationMenuContent className='p-2'>
-              <Link
+              {/* <Link
                 href={"/servicios"}
                 className={buttonVariants({
                   variant: "ghost",
@@ -117,25 +162,19 @@ function UnderBar({ hidden }: { hidden: boolean }) {
                 })}
               >
                 Categoría 1 <ChevronRight className='size-4' />
-              </Link>
-              <Link
-                href={"/servicios"}
-                className={buttonVariants({
-                  variant: "ghost",
-                  className: "gap-x-2",
-                })}
-              >
-                Categoría 2 <ChevronRight className='size-4' />
-              </Link>
-              <Link
-                href={"/servicios"}
-                className={buttonVariants({
-                  variant: "ghost",
-                  className: "gap-x-2",
-                })}
-              >
-                Categoría 3 <ChevronRight className='size-4' />
-              </Link>
+              </Link> */}
+              {categories?.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/c/${category.name}}`}
+                  className={buttonVariants({
+                    variant: "ghost",
+                    className: "gap-x-2 w-full justify-between",
+                  })}
+                >
+                  {category.name} <ChevronRight className='size-4' />
+                </Link>
+              ))}
             </NavigationMenuContent>
           </NavigationMenuItem>
         </NavigationMenuList>

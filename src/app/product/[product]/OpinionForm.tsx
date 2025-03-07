@@ -1,11 +1,6 @@
 "use client"
 
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import React, { SetStateAction, useEffect } from "react"
-import { addOpinion } from "./actions"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
@@ -14,10 +9,15 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { useForm } from "react-hook-form"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import React, { SetStateAction, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { addOpinion } from "./actions"
 
 type FormData = {
   rating: number
@@ -137,8 +137,12 @@ function OpinionForm({
                     placeholder='Me llegó en perfectas condiciones'
                     {...field}
                     onChange={(e) => field.onChange(e.target.value)}
+                    maxLength={200}
                   />
                 </FormControl>
+                <p className='text-slate-500 text-right text-sm'>
+                  {field.value?.length}/200
+                </p>
                 <FormMessage />
               </FormItem>
             )}

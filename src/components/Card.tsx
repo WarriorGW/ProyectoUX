@@ -53,10 +53,10 @@ function Card({
         <Link
           href={`/product/${formatToURL(product.name)}`}
           className={cn(
-            "text-pretty text-base w-full poly-component hover:text-sky-600 line-clamp-1 h-[3rem] text-ellipsis",
+            "text-pretty text-base w-full poly-component hover:text-sky-600 h-[3rem] text-ellipsis",
             {
-              "line-clamp-1": display === 1,
-              "line-clamp-2": display === 2,
+              "line-clamp-1 text-base": display === 1,
+              "line-clamp-2 text-sm h-[2.5rem]": display === 2,
             }
           )}
         >
