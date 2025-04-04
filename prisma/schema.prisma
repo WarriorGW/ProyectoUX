@@ -55,7 +55,9 @@ model Blog {
 model User {
   id        String   @id
   name      String?
+  picture   String?
   email     String   @unique
+  pwd       String?
   review    Review[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

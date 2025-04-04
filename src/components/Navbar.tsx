@@ -17,9 +17,9 @@ import {
   LayoutDashboard,
   LogOut,
   Search,
-  Settings,
   ShoppingCart,
   User,
+  User2,
 } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -90,7 +90,7 @@ function UserOptions() {
                   href='/edituser'
                   className='flex gap-x-3 justify-center items-center'
                 >
-                  <Settings className='size-4' /> Ajustes
+                  <User2 className='size-4' /> Perfil
                 </Link>
               </DropdownMenuItem>
             ) : (
