@@ -1,3 +1,7 @@
+> [!IMPORTANT]
+> Video de YouTube
+> [https://youtu.be/YQ-d-4qIJQU](https://youtu.be/YQ-d-4qIJQU)
+
 ## Guia de instalacion
 
 Primero descargar todo y colocarlo en una carpeta.
